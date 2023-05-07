@@ -4,12 +4,14 @@ import { Produto as ProdutoType } from '../../App'
 import * as S from './styles'
 import { addProductToCart } from '../../store/cart/cart.reducer'
 import { selectCart } from '../../store/cart/cart.selector'
+import { selectFavs } from '../../store/favs/favs.selector'
+import { setFavs } from '../../store/favs/favs.reducer'
 
 type Props = {
   produto: ProdutoType
   aoComprar?: (produto: ProdutoType) => void
-  favoritar: (produto: ProdutoType) => void
-  estaNosFavoritos: boolean
+  favoritar?: (produto: ProdutoType) => void
+  estaNosFavoritos?: boolean
 }
 
 export const paraReal = (valor: number) =>
@@ -17,9 +19,20 @@ export const paraReal = (valor: number) =>
     valor
   )
 
-const ProdutoComponent = ({ produto, favoritar, estaNosFavoritos }: Props) => {
+const ProdutoComponent = ({ produto }: Props) => {
   const cartList = useSelector(selectCart)
+  const favs = useSelector(selectFavs)
   const dispatch = useDispatch()
+
+  const isInFav = () => {
+    if (favs.some((item) => item.id === produto.id)) {
+      return true
+    }
+    return false
+  }
+
+  const handlefav = () => dispatch(setFavs(produto))
+
   const handleCart = () => dispatch(addProductToCart(cartList, produto))
 
   return (
@@ -31,10 +44,8 @@ const ProdutoComponent = ({ produto, favoritar, estaNosFavoritos }: Props) => {
       <S.Prices>
         <strong>{paraReal(produto.preco)}</strong>
       </S.Prices>
-      <S.BtnComprar onClick={() => favoritar(produto)} type="button">
-        {estaNosFavoritos
-          ? '- Remover dos favoritos'
-          : '+ Adicionar aos favoritos'}
+      <S.BtnComprar onClick={handlefav} type="button">
+        {isInFav() ? '- Remover dos favoritos' : '+ Adicionar aos favoritos'}
       </S.BtnComprar>
       <S.BtnComprar onClick={handleCart} type="button">
         Adicionar ao carrinho
